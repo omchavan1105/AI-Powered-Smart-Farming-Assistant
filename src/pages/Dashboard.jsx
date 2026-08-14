@@ -1,11 +1,28 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { weatherService } from '../services/weatherService';
+import { cropService } from '../services/cropService';
+import { soilService } from '../services/soilService';
+import { marketService } from '../services/marketService';
 import { CloudSun, Sprout, Droplets, TrendingUp, Bot, MapPin, AlertCircle } from 'lucide-react';
 
-const DashboardCard = ({ icon, iconBg, iconColor, title, value, subtitle, subtitleColor, isLoading, isUnavailable, unavailableText }) => (
-  <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', border: '1px solid #e5eee7' }}>
+const DashboardCard = ({ icon, iconBg, iconColor, title, value, subtitle, subtitleColor, isLoading, isUnavailable, unavailableText, onClick }) => (
+  <div 
+    onClick={onClick}
+    style={{ 
+      background: 'white', 
+      padding: '24px', 
+      borderRadius: '16px', 
+      boxShadow: '0 4px 15px rgba(0,0,0,0.03)', 
+      border: '1px solid #e5eee7',
+      cursor: onClick ? 'pointer' : 'default',
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+    }}
+    onMouseEnter={e => { if (onClick) e.currentTarget.style.transform = 'translateY(-2px)'; }}
+    onMouseLeave={e => { if (onClick) e.currentTarget.style.transform = 'none'; }}
+  >
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '15px' }}>
       <div style={{ background: iconBg, padding: '10px', borderRadius: '10px', color: iconColor }}>{icon}</div>
       <h3 style={{ margin: 0, color: '#506158', fontSize: '15px' }}>{title}</h3>
@@ -17,13 +34,13 @@ const DashboardCard = ({ icon, iconBg, iconColor, title, value, subtitle, subtit
       </div>
     ) : isUnavailable ? (
       <div>
-        <p style={{ margin: 0, fontSize: '16px', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <p style={{ margin: 0, fontSize: '15px', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <AlertCircle size={16} /> {unavailableText}
         </p>
       </div>
     ) : (
       <>
-        <p style={{ margin: 0, fontSize: '26px', fontWeight: 'bold', color: '#17351f' }}>{value}</p>
+        <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#17351f' }}>{value}</p>
         {subtitle && <span style={{ fontSize: '13px', color: subtitleColor || '#166534', fontWeight: '600' }}>{subtitle}</span>}
       </>
     )}
@@ -33,24 +50,49 @@ const DashboardCard = ({ icon, iconBg, iconColor, title, value, subtitle, subtit
 const Dashboard = () => {
   const { t } = useLanguage();
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   
   const [weather, setWeather] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
+  const [crops, setCrops] = useState([]);
+  const [soil, setSoil] = useState(null);
+  const [marketPrice, setMarketPrice] = useState(null);
 
   useEffect(() => {
-    const loadWeather = async () => {
+    const loadDashboardData = async () => {
       setWeatherLoading(true);
       try {
-        const data = await weatherService.getCurrentWeather(profile?.village);
-        setWeather(data);
+        const location = profile?.village || profile?.district || 'Pune';
+        const weatherData = await weatherService.getCurrentWeather(location);
+        setWeather(weatherData);
+
+        if (user) {
+          // Fetch farmer crops
+          const userCrops = await cropService.getFarmerCrops(user.id);
+          setCrops(userCrops);
+
+          // Fetch latest soil record
+          const latestSoil = await soilService.getLatestSoilRecord(user.id);
+          setSoil(latestSoil);
+
+          // Fetch market prices for farmer's active crop
+          const cropName = (userCrops && userCrops.length > 0) ? userCrops[0].crop_name : (profile?.current_crop || 'Tomato');
+          const prices = await marketService.getMarketPrices(cropName);
+          if (prices && prices.length > 0) {
+            setMarketPrice(prices[0]);
+          }
+        }
       } catch (err) {
-        console.error('Weather load error:', err);
+        console.error('Dashboard data load error:', err);
       } finally {
         setWeatherLoading(false);
       }
     };
-    loadWeather();
-  }, [profile]);
+    loadDashboardData();
+  }, [user, profile]);
+
+  const activeCropName = (crops && crops.length > 0) ? crops[0].crop_name : profile?.current_crop;
+  const activeCropSeason = (crops && crops.length > 0) ? `${crops[0].season || 'Active'} Season` : profile?.crop_stage;
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -68,19 +110,19 @@ const Dashboard = () => {
       {/* Overview Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
         
-        {/* Crop Card — from profile, not hardcoded */}
+        {/* Crop Card */}
         <DashboardCard
           icon={<Sprout size={24} />}
           iconBg="#e7f5e9"
           iconColor="#166534"
           title={t('dashboard.myCrop')}
-          value={profile?.current_crop || t('dashboard.noCrop')}
-          subtitle={profile?.current_crop ? (profile?.crop_stage || '') : t('dashboard.setupCrop')}
-          subtitleColor={profile?.current_crop ? '#166534' : '#9ca3af'}
-          isUnavailable={false}
+          value={activeCropName || t('dashboard.noCrop')}
+          subtitle={activeCropName ? (activeCropSeason || 'Active') : t('dashboard.setupCrop')}
+          subtitleColor={activeCropName ? '#166534' : '#9ca3af'}
+          onClick={() => navigate('/my-farm')}
         />
 
-        {/* Weather Card — from API with loading */}
+        {/* Weather Card */}
         <DashboardCard
           icon={<CloudSun size={24} />}
           iconBg="#e0f2fe"
@@ -92,26 +134,35 @@ const Dashboard = () => {
           isLoading={weatherLoading}
           isUnavailable={!weatherLoading && !weather}
           unavailableText={t('dashboard.dataUnavailable')}
+          onClick={() => navigate('/weather')}
         />
 
-        {/* Soil Moisture Card — not connected yet */}
+        {/* Soil Moisture Card */}
         <DashboardCard
           icon={<Droplets size={24} />}
           iconBg="#fdf4ff"
           iconColor="#86198f"
           title={t('dashboard.soilHealth')}
-          isUnavailable={true}
+          value={soil ? `pH ${soil.ph_level}` : null}
+          subtitle={soil ? `Moisture: ${soil.moisture_level}%` : null}
+          subtitleColor="#86198f"
+          isUnavailable={!soil}
           unavailableText={t('dashboard.dataUnavailable')}
+          onClick={() => navigate('/soil-analysis')}
         />
 
-        {/* Mandi Price Card — not connected yet */}
+        {/* Mandi Price Card */}
         <DashboardCard
           icon={<TrendingUp size={24} />}
           iconBg="#fffbeb"
           iconColor="#b45309"
           title={t('dashboard.mandiPrice')}
-          isUnavailable={true}
+          value={marketPrice ? `₹${marketPrice.currentPrice}/Q` : null}
+          subtitle={marketPrice ? `${marketPrice.market} (${marketPrice.crop})` : null}
+          subtitleColor="#b45309"
+          isUnavailable={!marketPrice}
           unavailableText={t('dashboard.dataUnavailable')}
+          onClick={() => navigate('/market-prices')}
         />
       </div>
 
@@ -126,16 +177,18 @@ const Dashboard = () => {
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'rgba(255,255,255,0.08)', padding: '16px', borderRadius: '12px' }}>
             <span style={{ fontSize: '22px' }}>🌧️</span>
             <p style={{ margin: 0, lineHeight: 1.5, color: '#d8f3df' }}>
-              {weather?.rainProb > 50 
-                ? (t('dashboard.weather') + ': ' + weather.rainProb + '% ' + t('dashboard.rainProb'))
-                : t('dashboard.dataUnavailable')
+              {weather?.rainProb > 40 
+                ? `${t('dashboard.weather')}: ${weather.rainProb}% ${t('dashboard.rainProb')}. Plan field activities accordingly.`
+                : weather ? `${weather.condition} in ${profile?.village || 'your area'}. Normal farming conditions.` : t('dashboard.dataUnavailable')
               }
             </p>
           </div>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'rgba(255,255,255,0.08)', padding: '16px', borderRadius: '12px' }}>
-            <span style={{ fontSize: '22px' }}>💡</span>
+            <span style={{ fontSize: '22px' }}>🌱</span>
             <p style={{ margin: 0, lineHeight: 1.5, color: '#d8f3df' }}>
-              {t('dashboard.dataUnavailable')} — {t('common.demoData')}
+              {soil 
+                ? `Latest soil record logged: pH ${soil.ph_level}. Soil moisture is ${soil.moisture_level}%.` 
+                : `${t('soil.subtitle')} — ${t('dashboard.dataUnavailable')}`}
             </p>
           </div>
         </div>

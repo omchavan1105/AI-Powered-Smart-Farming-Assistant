@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { diseaseService } from '../services/diseaseService';
 import { UploadCloud, CheckCircle, AlertTriangle, Info, Trash2, RefreshCw, Shield, Loader2 } from 'lucide-react';
 
@@ -8,6 +9,7 @@ const MAX_SIZE_MB = 10;
 
 const DiseaseDetection = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const fileInputRef = useRef(null);
   const [image, setImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
@@ -43,7 +45,7 @@ const DiseaseDetection = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await diseaseService.detectDisease(imageFile);
+      const res = await diseaseService.detectDisease(imageFile, user?.id);
       setResult(res);
     } catch (err) {
       setError(t('disease.errorAnalysis'));

@@ -6,7 +6,7 @@ import { LineChart, DollarSign, Activity, Loader2 } from 'lucide-react';
 
 const YieldPrediction = () => {
   const { t } = useLanguage();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   
   const [crop, setCrop] = useState('Tomato');
   const [farmSize, setFarmSize] = useState(profile?.farm_size_acres || '2');
@@ -22,7 +22,7 @@ const YieldPrediction = () => {
         crop,
         farmSize: parseFloat(farmSize) || 1,
         cropStage
-      });
+      }, user?.id);
       setResult(data);
     } catch (err) {
       console.error("Error predicting yield:", err);
