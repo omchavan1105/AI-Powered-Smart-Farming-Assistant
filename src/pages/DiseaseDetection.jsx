@@ -8,7 +8,7 @@ const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 const MAX_SIZE_MB = 10;
 
 const DiseaseDetection = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const fileInputRef = useRef(null);
   const [image, setImage] = useState(null);
@@ -45,7 +45,7 @@ const DiseaseDetection = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await diseaseService.detectDisease(imageFile, user?.id);
+      const res = await diseaseService.detectDisease(imageFile, user?.id, language);
       setResult(res);
     } catch (err) {
       setError(t('disease.errorAnalysis'));

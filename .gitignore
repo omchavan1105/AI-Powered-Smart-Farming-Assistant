@@ -5,3 +5,20 @@ dist/
 .env.*.local
 *.log
 .DS_Store
+
+# Python & AI Service
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+ai-service/venv/
+ai-service/.venv/
+.pytest_cache/
+ai-service/.pytest_cache/
+ai-service/datasets/*.zip
+ai-service/datasets/*.tar.gz
+*.h5
+*.pt
+*.pth
+*.onnx
