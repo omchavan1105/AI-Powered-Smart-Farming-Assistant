@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { soilService } from '../services/soilService';
 import { TestTube, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const SoilAnalysis = () => {
@@ -27,16 +27,14 @@ const SoilAnalysis = () => {
     setSaved(false);
 
     try {
-      const { error: dbError } = await supabase.from('soil_records').insert({
-        farmer_id: user.id,
-        ph_level: ph,
-        nitrogen: nitrogen,
-        phosphorus: phosphorus,
-        potassium: potassium,
-        moisture_level: moisture
+      await soilService.saveSoilRecord({
+        farmerId: user.id,
+        ph,
+        nitrogen,
+        phosphorus,
+        potassium,
+        moisture
       });
-
-      if (dbError) throw dbError;
 
       setSaved(true);
       setTimeout(() => setSaved(false), 4000);

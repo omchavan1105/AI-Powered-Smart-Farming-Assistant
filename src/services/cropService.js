@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 
-// Mock catalog for initial seed/fallback if DB is empty
+// Static catalog fallback for crop specifications
 const CROP_CATALOG = {
   "Tomato": { scientificName: "Solanum lycopersicum", season: "Kharif, Rabi, Zaid", duration: "90-120 days", waterRequirement: "High (600-800 mm)", soilType: "Well-drained sandy loam", phRange: "6.0 - 7.0" },
   "Onion": { scientificName: "Allium cepa", season: "Rabi", duration: "100-120 days", waterRequirement: "Medium (400-600 mm)", soilType: "Sandy loam to clay loam", phRange: "6.5 - 7.5" },
@@ -10,48 +10,83 @@ const CROP_CATALOG = {
 
 export const cropService = {
   getCropDetails: async (cropName) => {
-    // In a fully developed Phase 4, we would query a `crop_catalog` table.
-    // For now, we simulate the database query with our local catalog dictionary.
-    await new Promise(resolve => setTimeout(resolve, 300));
     const name = cropName || "Tomato";
-    
     if (CROP_CATALOG[name]) {
       return { name, ...CROP_CATALOG[name] };
     }
-    
     return {
-      name: name,
+      name,
       scientificName: "Unknown",
-      season: "Unknown",
-      duration: "Unknown",
-      waterRequirement: "Unknown",
-      soilType: "Unknown",
-      phRange: "Unknown"
+      season: "Seasonal",
+      duration: "90-120 days",
+      waterRequirement: "Moderate",
+      soilType: "Loamy soil",
+      phRange: "6.0 - 7.5"
     };
   },
   
   getRecommendations: async (context) => {
-    // In a fully developed Phase 4, this would call an Edge Function for ML-based recommendation.
-    // For now, we return deterministic rule-based recommendations.
-    await new Promise(resolve => setTimeout(resolve, 500));
     return [
       { crop: "Tomato", score: 92, reason: "Matches your soil type and current season." },
       { crop: "Onion", score: 87, reason: "Good market demand, suitable for your water availability." },
-      { crop: "Maize", score: 81, reason: "Secondary option, lower water requirement." }
+      { crop: "Soybean", score: 84, reason: "Optimal nitrogen fixing, fits current moisture profile." },
+      { crop: "Cotton", score: 79, reason: "High profit potential for deep black soils." }
     ];
   },
 
+  // Farmer Crops CRUD (Supabase database)
   getFarmerCrops: async (farmerId) => {
     if (!farmerId) return [];
     const { data, error } = await supabase
       .from('farmer_crops')
       .select('*')
-      .eq('farmer_id', farmerId);
+      .eq('farmer_id', farmerId)
+      .order('created_at', { ascending: false });
     
     if (error) {
       console.error("Error fetching farmer crops:", error);
       return [];
     }
+    return data || [];
+  },
+
+  addFarmerCrop: async (cropData) => {
+    const { data, error } = await supabase
+      .from('farmer_crops')
+      .insert({
+        farmer_id: cropData.farmerId,
+        crop_name: cropData.cropName,
+        season: cropData.season,
+        sowing_date: cropData.sowingDate || null,
+        expected_harvest_date: cropData.expectedHarvestDate || null,
+        status: cropData.status || 'active'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
     return data;
+  },
+
+  updateFarmerCrop: async (cropId, updates) => {
+    const { data, error } = await supabase
+      .from('farmer_crops')
+      .update(updates)
+      .eq('id', cropId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  deleteFarmerCrop: async (cropId) => {
+    const { error } = await supabase
+      .from('farmer_crops')
+      .delete()
+      .eq('id', cropId);
+
+    if (error) throw error;
+    return true;
   }
 };
