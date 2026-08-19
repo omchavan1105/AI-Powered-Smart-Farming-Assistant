@@ -239,7 +239,7 @@ npm run build
 ---
 
 ## 👥 Development Team
-* **Member 1**: Frontend / UI & Localization
-* **Member 2**: Backend / Database / Auth / Supabase
-* **Member 3**: AI / ML / Computer Vision / Python FastAPI
-* **Member 4**: External APIs / Integration / Testing / Deployment
+* **Ayush**: Frontend / UI & Localization (Member 1)
+* **Jay**: Backend / Database / Auth / Supabase (Member 2)
+* **Om**: AI / ML / Computer Vision / Python FastAPI (Member 3)
+* **Tejas**: External APIs / Integration / Testing / Deployment (Member 4)

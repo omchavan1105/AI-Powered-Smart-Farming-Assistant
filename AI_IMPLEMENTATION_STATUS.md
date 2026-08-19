@@ -1,6 +1,6 @@
 # AI/ML Implementation Status — KrishiSetu
 
-**Author**: Member 3 (AI/ML Developer)  
+**Author**: Om (AI/ML Developer — Member 3)  
 **Project**: KrishiSetu — AI-Powered Smart Farming Assistant  
 **Date**: 2026-08-15  
 
@@ -22,7 +22,7 @@
 1. **`src/services/diseaseService.js`**:
    - Currently returns fixed object `{ disease: "Early Blight", confidence: 94.5, severity: "Moderate", symptoms: [...], recommendedAction: "..." }`.
    - UI correctly displays "Demo ML Mode" badge.
-   - **Goal for Member 3**: Replace mock with a real trained Convolutional Neural Network (CNN / MobileNetV2 / ResNet) served via FastAPI.
+   - **Goal for Om (Member 3)**: Replace mock with a real trained Convolutional Neural Network (CNN / MobileNetV2 / ResNet) served via FastAPI.
 
 2. **`src/services/yieldService.js`**:
    - Computes deterministic expected harvest based on farm acreage and crop name.
@@ -66,7 +66,7 @@ Return Structured JSON -> Saved to `disease_detections` -> Rendered in UI
 
 ---
 
-## 5. What Member 3 Needs to Implement
+## 5. What Om (Member 3) Needs to Implement
 
 ### Priority #1: Crop Disease Detection Microservice
 - **Directory**: `ai-service/`

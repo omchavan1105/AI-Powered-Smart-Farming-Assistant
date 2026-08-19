@@ -1,6 +1,6 @@
 # Crop Disease AI Model Evaluation Report — KrishiSetu
 
-**Author:** Member 3 (AI / ML Engineer)  
+**Author:** Om (AI / ML Engineer — Member 3)  
 **Project:** KrishiSetu — AI-Powered Smart Farming Assistant  
 **Date:** 2026-08-19  
 **Model Status:** ✅ Trained & Serialized (`ai-service/models/saved_model.joblib`)

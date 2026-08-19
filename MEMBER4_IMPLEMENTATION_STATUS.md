@@ -1,4 +1,4 @@
-# MEMBER 4 — Implementation Status Report
+# Tejas (Member 4) — Implementation Status Report
 ## KrishiSetu — External APIs + Integration + Testing
 
 **Date:** 2026-08-14  
@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary of Changes
 
-As **Member 4 (External APIs + Integration + Testing)**, all tasks have been completed while strictly preserving the React + Vite + Supabase architecture and honoring team boundaries.
+As **Tejas (Member 4 — External APIs + Integration + Testing)**, all tasks have been completed while strictly preserving the React + Vite + Supabase architecture and honoring team boundaries.
 
 ---
 
@@ -70,7 +70,7 @@ As **Member 4 (External APIs + Integration + Testing)**, all tasks have been com
   - Priority filter tabs with trigger reason display.
   - Clean "All Clear" empty state when parameters are healthy.
 
-### Phase 6: Member 3 AI Microservice Integration
+### Phase 6: Om (Member 3) AI Microservice Integration
 - **Service:** `src/services/diseaseService.js`
   - Connected to FastAPI `/predict/disease` endpoint with timeout.
   - On active disease diagnosis, automatically persists detection to Supabase and dispatches a high/medium priority alert to the farmer's alerts center.

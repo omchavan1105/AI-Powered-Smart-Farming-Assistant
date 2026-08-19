@@ -5,7 +5,7 @@
 
 ---
 
-## 1. Member 1 (Frontend/UI) — DONE
+## 1. Ayush (Frontend/UI) — DONE
 * **Framework & Tooling:** React 18 + Vite with React Router v7 and Lucide icons.
 * **Component Design System:** Custom responsive styling system in `src/styles.css` with dark green agricultural palette (`#166534`, `#0c4221`, `#f7fbf7`).
 * **Layout & Navigation:** `DashboardLayout.jsx` and `Sidebar.jsx` featuring responsive sidebar, mobile hamburger drawer, overlay, and topbar.
@@ -31,7 +31,7 @@
 
 ---
 
-## 2. Member 1 (Frontend/UI) — REMAINING
+## 2. Ayush (Frontend/UI) — REMAINING
 * **Dynamic Badge Synchronization:**
   * `DiseaseDetection.jsx`: Header displays static "Demo ML Mode" badge instead of reacting dynamically to `result.isRealAI`.
   * `FarmAI.jsx`: Header displays static "Demo Mode" instead of dynamically reflecting AI connectivity status.
@@ -39,7 +39,7 @@
 
 ---
 
-## 3. Member 2 (Backend / Database / Auth / Supabase) — DONE
+## 3. Jay (Backend / Database / Auth / Supabase) — DONE
 * **Database Schema (`supabase/migrations/00001_initial_schema.sql`):**
   * 12 core tables: `farmer_profiles`, `farmer_crops`, `soil_records`, `weather_records`, `market_prices`, `disease_detections`, `ai_conversations`, `ai_messages`, `recommendations`, `government_schemes`, `yield_predictions`, `alerts`.
 * **Authentication:** Supabase Auth with email/password signup, login, session persistence, and auto token refresh.
@@ -51,7 +51,7 @@
 
 ---
 
-## 4. Member 2 (Backend / Database / Auth / Supabase) — REMAINING
+## 4. Jay (Backend / Database / Auth / Supabase) — REMAINING
 * **RLS Insert Policy on `yield_predictions` & `recommendations`:**
   * `00001_initial_schema.sql` configured only `SELECT` for authenticated users.
   * When `yieldService.predictYield()` attempts to insert a record, PostgreSQL rejects with an RLS violation.
@@ -60,7 +60,7 @@
 
 ---
 
-## 5. Member 3 (AI / ML / Python / FastAPI) — DONE
+## 5. Om (AI / ML / Python / FastAPI) — DONE
 * **Microservice Architecture:** FastAPI microservice in `ai-service/` running on Uvicorn.
 * **Endpoints:**
   * `GET /health` — Service health and model status.
@@ -75,7 +75,7 @@
 
 ---
 
-## 6. Member 3 (AI / ML / Python / FastAPI) — REMAINING (HIGHEST PRIORITY)
+## 6. Om (AI / ML / Python / FastAPI) — REMAINING (HIGHEST PRIORITY)
 * **Real Trained Model Integration:**
   * The current classifier in `architecture.py` uses hand-crafted color/edge projection heuristics rather than a trained neural network / machine learning classifier.
   * **Requirement:** Build a genuine trained crop disease classification model on a standard public agricultural disease dataset (PlantVillage benchmark).
@@ -84,7 +84,7 @@
 
 ---
 
-## 7. Member 4 (External APIs / Integration / Testing) — DONE
+## 7.Tejas (External APIs / Integration / Testing) — DONE
 * **Weather API Service (`src/services/weatherService.js`):**
   * Edge Function connector with structured error classification (`INVALID_LOCATION`, `RATE_LIMITED`, `TIMEOUT`, `NETWORK_ERROR`).
   * Deterministic agro-impact analysis (`generateFarmingImpact`) for spraying and irrigation.
@@ -101,7 +101,7 @@
 
 ---
 
-## 8. Member 4 (External APIs / Integration / Testing) — REMAINING
+## 8. Tejas (External APIs / Integration / Testing) — REMAINING
 * **End-to-End Farmer Flow Testing:** Run and verify complete flows across authentication, crop logging, soil analysis, disease detection, market analytics, alerts, and chatbot.
 * **Deployment Setup:** Production build validation, Vercel configuration, and Python AI service hosting setup (Render / Railway / Docker).
 
