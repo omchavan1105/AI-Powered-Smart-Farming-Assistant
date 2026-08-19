@@ -30,6 +30,7 @@ def classify_crop_disease(image_bytes: bytes, language: str = "en") -> Dict[str,
 
     # 3. Handle Low-Confidence / Inconclusive Images
     if confidence < CONFIDENCE_THRESHOLD:
+        rec_action = "Retake a clear, well-focused close-up photo showing distinct leaf symptoms in daylight, or consult your local agricultural officer."
         return {
             "success": True,
             "crop": "Unknown",
@@ -42,7 +43,8 @@ def classify_crop_disease(image_bytes: bytes, language: str = "en") -> Dict[str,
                 "Unclear leaf patterns or non-crop image detected",
                 "Blurry or poorly lit photograph"
             ],
-            "recommended_action": "Retake a clear, well-focused close-up photo showing distinct leaf symptoms in daylight, or consult your local agricultural officer.",
+            "recommended_action": rec_action,
+            "recommendations": [rec_action],
             "prevention": "Ensure regular crop inspection and capture sharp photographs of individual leaves.",
             "top_probabilities": {k: round(v * 100, 1) for k, v in sorted(all_probs.items(), key=lambda x: x[1], reverse=True)[:3]}
         }
@@ -61,6 +63,7 @@ def classify_crop_disease(image_bytes: bytes, language: str = "en") -> Dict[str,
         "severity": advisory["severity"],
         "symptoms": advisory["symptoms"],
         "recommended_action": advisory["recommended_action"],
+        "recommendations": [advisory["recommended_action"]],
         "prevention": advisory["prevention"],
         "top_probabilities": {k: round(v * 100, 1) for k, v in sorted(all_probs.items(), key=lambda x: x[1], reverse=True)[:3]}
     }
