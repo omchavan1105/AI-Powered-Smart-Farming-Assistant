@@ -2,38 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { alertService } from '../services/alertService';
-import { Bell, AlertTriangle, CloudRain, TrendingUp, Loader2 } from 'lucide-react';
-
-const FALLBACK_ALERTS = [
-  {
-    id: '1',
-    alert_type: 'weather',
-    title: 'Heavy Rainfall Advisory',
-    message: 'Moderate to heavy rain predicted in your district within the next 48 hours. Ensure proper drainage in fields.',
-    priority: 'High',
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    alert_type: 'pest',
-    title: 'Pest Alert: Tomato Early Blight',
-    message: 'Humid conditions are favorable for early blight in tomato crops in nearby blocks. Monitor lower leaves closely.',
-    priority: 'Medium',
-    created_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: '3',
-    alert_type: 'market',
-    title: 'Mandi Price Rise',
-    message: 'Onion prices in Lasalgaon APMC increased by ₹150/Q today due to lower arrivals.',
-    priority: 'Low',
-    created_at: new Date(Date.now() - 172800000).toISOString()
-  }
-];
+import { weatherService } from '../services/weatherService';
+import { soilService } from '../services/soilService';
+import { marketService } from '../services/marketService';
+import { Bell, AlertTriangle, CloudRain, TrendingUp, Droplets, Bug, Loader2, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 const Alerts = () => {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [alerts, setAlerts] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -42,46 +18,72 @@ const Alerts = () => {
     const fetchAlerts = async () => {
       setLoading(true);
       try {
+        let dbAlerts = [];
         if (user) {
-          const dbAlerts = await alertService.getFarmerAlerts(user.id);
-          if (dbAlerts && dbAlerts.length > 0) {
-            setAlerts(dbAlerts);
-          } else {
-            setAlerts(FALLBACK_ALERTS);
-          }
-        } else {
-          setAlerts(FALLBACK_ALERTS);
+          dbAlerts = await alertService.getFarmerAlerts(user.id);
         }
+
+        // Fetch live contextual data to generate real-time alerts
+        const location = profile?.village || profile?.district || 'Pune';
+        const [weatherData, marketData, soilData] = await Promise.all([
+          weatherService.getCurrentWeather(location),
+          marketService.getMarketPrices(profile?.current_crop || ''),
+          user ? soilService.getLatestSoilRecord(user.id) : null
+        ]);
+
+        const dynamicAlerts = alertService.generateLiveAlerts({
+          weatherData,
+          marketData,
+          soilData,
+          cropName: profile?.current_crop || 'Farm Crop'
+        });
+
+        // Merge DB alerts and dynamic alerts (deduplicating by message/title)
+        const combined = [...dbAlerts];
+        dynamicAlerts.forEach(dyn => {
+          const exists = combined.some(a => a.message === dyn.message || a.title === dyn.title);
+          if (!exists) {
+            combined.push(dyn);
+          }
+        });
+
+        setAlerts(combined);
       } catch (err) {
         console.error("Error fetching alerts:", err);
-        setAlerts(FALLBACK_ALERTS);
       } finally {
         setLoading(false);
       }
     };
     fetchAlerts();
-  }, [user]);
+  }, [user, profile]);
 
   const filteredAlerts = filter === 'all' 
     ? alerts 
     : alerts.filter(a => (a.priority || '').toLowerCase() === filter.toLowerCase());
 
   const getAlertIcon = (type) => {
-    if (type === 'weather') return <CloudRain size={20} />;
-    if (type === 'market') return <TrendingUp size={20} />;
-    return <AlertTriangle size={20} />;
+    switch (type) {
+      case 'weather':
+        return <CloudRain size={20} />;
+      case 'market':
+        return <TrendingUp size={20} />;
+      case 'soil':
+        return <Droplets size={20} />;
+      case 'pest':
+      case 'disease':
+        return <Bug size={20} />;
+      default:
+        return <AlertTriangle size={20} />;
+    }
   };
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '30px' }}>
-        <h1 style={{ color: '#166534', margin: '0 0 10px 0', fontFamily: 'Manrope, sans-serif' }}>{t('alerts.title')}</h1>
-        <p style={{ color: '#627168', margin: 0 }}>{t('alerts.subtitle')}</p>
-        <div style={{ marginTop: '10px' }}>
-          <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' }}>
-            {t('common.demoData')}
-          </span>
-        </div>
+      <header style={{ marginBottom: '25px' }}>
+        <h1 style={{ color: '#166534', margin: '0 0 8px 0', fontFamily: 'Manrope, sans-serif' }}>{t('alerts.title')}</h1>
+        <p style={{ color: '#627168', margin: 0 }}>
+          Real-time agro-climatic advisories, pest/disease warnings, and mandi fluctuations tailored to your farm.
+        </p>
       </header>
 
       {/* Filter Tabs */}
@@ -102,7 +104,7 @@ const Alerts = () => {
               textTransform: 'capitalize'
             }}
           >
-            {f === 'all' ? 'All Alerts' : f}
+            {f === 'all' ? `All Alerts (${alerts.length})` : `${f} Priority`}
           </button>
         ))}
       </div>
@@ -113,15 +115,23 @@ const Alerts = () => {
           <Loader2 size={24} style={{ animation: 'spin 1s linear infinite' }} />
           {t('common.loading')}
         </div>
+      ) : filteredAlerts.length === 0 ? (
+        <div style={{ background: 'white', padding: '50px 20px', textAlign: 'center', borderRadius: '16px', border: '1px solid #e5eee7' }}>
+          <CheckCircle2 size={48} style={{ color: '#166534', marginBottom: '12px' }} />
+          <h3 style={{ color: '#17351f', margin: '0 0 6px 0' }}>All Clear! No Active Alerts</h3>
+          <p style={{ color: '#627168', margin: 0, fontSize: '14px' }}>
+            Weather, market prices, and soil parameters are within normal safe ranges for your farm.
+          </p>
+        </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          {filteredAlerts.map((item) => {
+          {filteredAlerts.map((item, idx) => {
             const isHigh = item.priority === 'High';
             const isMedium = item.priority === 'Medium';
             
             return (
               <div 
-                key={item.id} 
+                key={item.id || idx} 
                 style={{ 
                   background: 'white', 
                   padding: '20px 24px', 
@@ -138,32 +148,38 @@ const Alerts = () => {
                   color: isHigh ? '#dc2626' : isMedium ? '#d97706' : '#2563eb',
                   padding: '10px', 
                   borderRadius: '10px',
-                  flexShrink: 0
+                  flexShrink: 0 
                 }}>
                   {getAlertIcon(item.alert_type)}
                 </div>
 
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }}>
-                    <h3 style={{ margin: 0, color: '#17351f', fontSize: '17px' }}>{item.title || item.message}</h3>
+                    <h3 style={{ margin: 0, color: '#17351f', fontSize: '16px' }}>{item.title || 'Farm Advisory'}</h3>
                     <span style={{ 
                       background: isHigh ? '#fef2f2' : isMedium ? '#fffbeb' : '#eff6ff',
                       color: isHigh ? '#b91c1c' : isMedium ? '#b45309' : '#1d4ed8',
-                      padding: '2px 10px',
+                      padding: '3px 10px',
                       borderRadius: '12px',
-                      fontSize: '12px',
+                      fontSize: '11px',
                       fontWeight: 'bold'
                     }}>
-                      {t('alerts.priority')}: {item.priority}
+                      {item.priority} Priority
                     </span>
                   </div>
                   
-                  <p style={{ margin: '0 0 8px 0', color: '#506158', fontSize: '14px', lineHeight: 1.5 }}>
+                  <p style={{ margin: '0 0 10px 0', color: '#374151', fontSize: '14px', lineHeight: 1.5 }}>
                     {item.message}
                   </p>
 
-                  <span style={{ color: '#9ca3af', fontSize: '12px' }}>
-                    {new Date(item.created_at).toLocaleDateString()}
+                  {item.reason && (
+                    <div style={{ background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>
+                      <strong>Trigger Reason:</strong> {item.reason}
+                    </div>
+                  )}
+
+                  <span style={{ color: '#9ca3af', fontSize: '11px' }}>
+                    {item.created_at ? new Date(item.created_at).toLocaleString() : 'Live Stream'}
                   </span>
                 </div>
               </div>

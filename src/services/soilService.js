@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { generateSoilRecommendation, calculateSoilHealthScore } from './soilRecommendationEngine';
 
 export const soilService = {
   saveSoilRecord: async (recordData) => {
@@ -54,5 +55,19 @@ export const soilService = {
       console.error("Error fetching soil history:", err);
       return [];
     }
+  },
+
+  /**
+   * Evaluates soil data and generates ICAR-compliant recommendations
+   */
+  getSoilRecommendation: (soilData, cropName = 'General Crop') => {
+    return generateSoilRecommendation(soilData, cropName);
+  },
+
+  /**
+   * Computes health score from raw parameters
+   */
+  getHealthScore: (ph, nitrogen, phosphorus, potassium, moisture) => {
+    return calculateSoilHealthScore(ph, nitrogen, phosphorus, potassium, moisture);
   }
 };

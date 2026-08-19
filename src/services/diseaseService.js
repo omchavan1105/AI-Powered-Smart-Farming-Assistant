@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { alertService } from './alertService';
 
 const AI_API_BASE_URL = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
 
@@ -7,7 +8,7 @@ export const diseaseService = {
    * Analyzes crop leaf image using the real Python FastAPI AI/ML microservice.
    * Gracefully falls back to localized demo inference if microservice is offline.
    */
-  detectDisease: async (imageFile, farmerId = null, language = 'en') => {
+  detectDisease: async (imageFile, farmerId = null, language = 'en', cropName = 'Crop') => {
     let prediction = null;
 
     try {
@@ -15,7 +16,7 @@ export const diseaseService = {
       formData.append('file', imageFile);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       const response = await fetch(`${AI_API_BASE_URL}/predict/disease?language=${encodeURIComponent(language)}`, {
         method: 'POST',
@@ -45,11 +46,11 @@ export const diseaseService = {
     } catch (err) {
       console.warn("AI Microservice offline or unreachable, using fallback predictor:", err.message);
       
-      // Fallback inference
+      // Fallback inference clearly marked as isRealAI: false
       prediction = {
         disease: "Early Blight",
         confidence: 92.5,
-        crop: "Tomato",
+        crop: cropName || "Tomato",
         severity: "Moderate",
         symptoms: ["Brown spots with concentric rings on lower leaves", "Yellowing of surrounding tissue"],
         recommendedAction: "Apply Mancozeb or Copper Oxychloride spray every 7-10 days.",
@@ -59,7 +60,7 @@ export const diseaseService = {
       };
     }
 
-    // Persist detection record to Supabase
+    // Persist detection record and auto-trigger Alert to Supabase
     if (farmerId && prediction && !prediction.isUncertain) {
       try {
         await supabase.from('disease_detections').insert({
@@ -69,6 +70,16 @@ export const diseaseService = {
           severity: prediction.severity,
           recommended_action: prediction.recommendedAction
         });
+
+        // If active disease identified (not healthy), auto-generate high/medium priority alert
+        if (prediction.disease !== 'Healthy Plant') {
+          await alertService.createAlert({
+            farmerId,
+            alertType: 'pest',
+            priority: prediction.severity === 'High' ? 'High' : 'Medium',
+            message: `Disease Diagnosed: ${prediction.disease} in ${prediction.crop || cropName}. Confidence: ${prediction.confidence}%. Action: ${prediction.recommendedAction}`
+          }).catch(alertErr => console.warn("Could not auto-insert alert:", alertErr));
+        }
       } catch (dbErr) {
         console.warn("Could not persist disease detection record to Supabase:", dbErr);
       }

@@ -1,6 +1,10 @@
 import { supabase } from '../lib/supabase';
+import { alertGenerator } from './alertGenerator';
 
 export const alertService = {
+  /**
+   * Fetch all alerts for a farmer from Supabase database
+   */
   getFarmerAlerts: async (farmerId) => {
     if (!farmerId) return [];
     try {
@@ -13,17 +17,20 @@ export const alertService = {
       if (error) throw error;
       return data || [];
     } catch (err) {
-      console.error("Error fetching farmer alerts:", err);
+      console.error("Error fetching farmer alerts from DB:", err);
       return [];
     }
   },
 
+  /**
+   * Insert a new alert for a farmer
+   */
   createAlert: async (alertData) => {
     const { data, error } = await supabase
       .from('alerts')
       .insert({
         farmer_id: alertData.farmerId,
-        alert_type: alertData.alertType || 'general',
+        alert_type: alertData.alertType || alertData.alert_type || 'general',
         priority: alertData.priority || 'Medium',
         message: alertData.message,
         is_read: false
@@ -35,6 +42,9 @@ export const alertService = {
     return data;
   },
 
+  /**
+   * Mark an alert as read
+   */
   markAlertRead: async (alertId) => {
     const { data, error } = await supabase
       .from('alerts')
@@ -45,5 +55,17 @@ export const alertService = {
 
     if (error) throw error;
     return data;
+  },
+
+  /**
+   * Generates dynamic actionable alerts from active weather, market, soil, and disease conditions
+   */
+  generateLiveAlerts: ({ weatherData, marketData, soilData, diseaseData, cropName }) => {
+    const weatherAlerts = alertGenerator.fromWeather(weatherData);
+    const diseaseAlerts = alertGenerator.fromDiseaseDetection(diseaseData, cropName);
+    const marketAlerts = alertGenerator.fromMarketPrices(marketData);
+    const soilAlerts = alertGenerator.fromSoilRecord(soilData);
+
+    return [...diseaseAlerts, ...weatherAlerts, ...marketAlerts, ...soilAlerts];
   }
 };
