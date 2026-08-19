@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { aiService } from '../services/aiService';
-import { Bot, Send, Sparkles, Trash2, Loader2, RefreshCw } from 'lucide-react';
+import { Bot, Send, Sparkles, Trash2, Loader2, CheckCircle2 } from 'lucide-react';
 
 const FarmAI = () => {
   const { t, language } = useLanguage();
@@ -115,8 +115,10 @@ const FarmAI = () => {
             <Bot size={24} />
           </div>
           <div>
-            <h2 style={{ margin: 0, fontSize: '18px', fontFamily: 'Manrope, sans-serif' }}>FarmAI</h2>
-            <span style={{ fontSize: '12px', color: '#b9d7c0' }}>{t('ai.demoMode')}</span>
+            <h2 style={{ margin: 0, fontSize: '18px', fontFamily: 'Manrope, sans-serif' }}>FarmAI Assistant</h2>
+            <span style={{ fontSize: '12px', color: '#dcfce7', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <CheckCircle2 size={12} /> Agricultural AI Copilot
+            </span>
           </div>
         </div>
 
