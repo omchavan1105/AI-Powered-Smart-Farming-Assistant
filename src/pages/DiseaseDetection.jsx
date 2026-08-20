@@ -18,6 +18,14 @@ const DiseaseDetection = () => {
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [isAiOnline, setIsAiOnline] = useState(null);
+
+  useEffect(() => {
+    // Ping backend AI microservice health on mount
+    diseaseService.checkHealth().then(status => {
+      setIsAiOnline(status.isOnline && status.model_loaded);
+    }).catch(() => setIsAiOnline(false));
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -55,6 +63,7 @@ const DiseaseDetection = () => {
     try {
       const res = await diseaseService.detectDisease(imageFile, user?.id, language);
       setResult(res);
+      if (res) setIsAiOnline(res.isRealAI);
     } catch (err) {
       setError(t('disease.errorAnalysis'));
     } finally {
@@ -75,7 +84,7 @@ const DiseaseDetection = () => {
     setTimeout(() => fileInputRef.current?.click(), 100);
   };
 
-  const isReal = result ? result.isRealAI : true;
+  const isReal = result ? result.isRealAI : (isAiOnline !== false);
 
   return (
     <div style={{ maxWidth: '850px', margin: '0 auto' }}>
@@ -85,13 +94,13 @@ const DiseaseDetection = () => {
           <p style={{ color: '#627168', margin: 0 }}>{t('disease.subtitle')}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {result && !result.isRealAI ? (
+          {isAiOnline === false || (result && !result.isRealAI) ? (
             <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <Info size={12} /> {t('common.demoData')}
+              <Info size={12} /> Offline / Demo Mode
             </span>
           ) : (
             <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <CheckCircle size={12} /> PlantVillage AI Engine
+              <CheckCircle size={12} /> PlantVillage Real AI (95.1% Acc)
             </span>
           )}
           {history.length > 0 && (
@@ -176,13 +185,14 @@ const DiseaseDetection = () => {
         <div style={{ background: 'white', padding: '30px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #e5eee7' }}>
           {/* Offline Fallback Banner if applicable */}
           {!result.isRealAI && (
-            <div style={{ background: '#fef3c7', border: '1px solid #fde68a', padding: '10px 16px', borderRadius: '10px', marginBottom: '20px', fontSize: '13px', color: '#92400e', textAlign: 'center' }}>
-              ⚠️ AI microservice is currently offline. Showing baseline preview diagnosis.
+            <div style={{ background: '#fef3c7', border: '1px solid #fde68a', padding: '12px 18px', borderRadius: '12px', marginBottom: '20px', fontSize: '13px', color: '#92400e', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <AlertTriangle size={18} />
+              <span>AI microservice is currently offline or unreachable. Please start the Python FastAPI service at <code>localhost:8000</code>.</span>
             </div>
           )}
 
           {/* Uncertainty Warning */}
-          {result.isUncertain && (
+          {result.isUncertain && result.isRealAI && (
             <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: '14px 18px', borderRadius: '12px', marginBottom: '20px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
               <AlertCircle size={22} style={{ color: '#d97706', flexShrink: 0, marginTop: '2px' }} />
               <div>

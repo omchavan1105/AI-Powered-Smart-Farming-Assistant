@@ -18,7 +18,13 @@ ai-service/.venv/
 ai-service/.pytest_cache/
 ai-service/datasets/*.zip
 ai-service/datasets/*.tar.gz
+ai-service/datasets/plantvillage/
+ai-service/datasets/raw/
+ai-service/models/saved_model.joblib
+ai-service/models/disease_model.h5
+ai-service/models/disease_model/
 *.h5
 *.pt
 *.pth
 *.onnx
+*.tflite

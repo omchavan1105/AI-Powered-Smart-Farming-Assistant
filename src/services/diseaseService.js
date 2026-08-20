@@ -44,18 +44,18 @@ export const diseaseService = {
         throw new Error(errData.detail || `Server returned ${response.status}`);
       }
     } catch (err) {
-      console.warn("AI Microservice offline or unreachable, using fallback predictor:", err.message);
+      console.warn("AI Microservice offline or unreachable:", err.message);
       
-      // Fallback inference clearly marked as isRealAI: false
+      // Honest error — do NOT return a fake diagnosis
       prediction = {
-        disease: "Early Blight",
-        confidence: 92.5,
-        crop: cropName || "Tomato",
-        severity: "Moderate",
-        symptoms: ["Brown spots with concentric rings on lower leaves", "Yellowing of surrounding tissue"],
-        recommendedAction: "Apply Mancozeb or Copper Oxychloride spray every 7-10 days.",
-        prevention: "Ensure proper plant spacing for air circulation and avoid overhead sprinkler watering.",
-        isUncertain: false,
+        disease: "AI Service Unavailable",
+        confidence: 0,
+        crop: cropName || "Unknown",
+        severity: "Unknown",
+        symptoms: ["The AI disease detection service is currently offline or unreachable."],
+        recommendedAction: "Please ensure the AI microservice is running at " + AI_API_BASE_URL + " and try again. If the issue persists, consult your local agricultural officer for in-person leaf diagnosis.",
+        prevention: "Start the AI service with: cd ai-service && uvicorn main:app --host 0.0.0.0 --port 8000",
+        isUncertain: true,
         isRealAI: false
       };
     }
@@ -103,6 +103,23 @@ export const diseaseService = {
     } catch (err) {
       console.error("Error fetching disease detection history:", err);
       return [];
+    }
+  },
+
+  // Check health of Python FastAPI microservice
+  checkHealth: async () => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch(`${AI_API_BASE_URL}/health`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        return { isOnline: true, ...data };
+      }
+      return { isOnline: false };
+    } catch (e) {
+      return { isOnline: false };
     }
   }
 };

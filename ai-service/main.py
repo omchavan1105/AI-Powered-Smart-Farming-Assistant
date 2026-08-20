@@ -1,6 +1,6 @@
 import os
 from typing import Optional
-from fastapi import FastAPI, File, UploadFile, Query, HTTPException, status
+from fastapi import FastAPI, File, UploadFile, Query, Form, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -55,12 +55,15 @@ async def health_check():
 @app.post("/predict/disease", tags=["Inference"])
 async def predict_disease(
     file: UploadFile = File(..., description="Crop leaf photograph (JPG, PNG, WEBP)"),
-    language: str = Query("en", description="Preferred output language: 'en', 'hi', or 'mr'")
+    language: Optional[str] = Query(None, description="Preferred output language: 'en', 'hi', or 'mr'"),
+    language_form: Optional[str] = Form(None)
 ):
     """
     Analyzes an uploaded crop leaf image and returns the predicted disease,
     calibrated confidence score, severity rating, symptoms, and localized safe agronomic advice.
     """
+    selected_language = language or language_form or "en"
+
     if not file:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -75,7 +78,7 @@ async def predict_disease(
                 detail="Uploaded file is empty."
             )
 
-        result = classify_crop_disease(file_bytes, language=language)
+        result = classify_crop_disease(file_bytes, language=selected_language)
         return result
 
     except HTTPException:
