@@ -5,10 +5,11 @@ import { alertService } from '../services/alertService';
 import { weatherService } from '../services/weatherService';
 import { soilService } from '../services/soilService';
 import { marketService } from '../services/marketService';
-import { Bell, AlertTriangle, CloudRain, TrendingUp, Droplets, Bug, Loader2, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { whatsappService } from '../services/whatsappService';
+import { Bell, AlertTriangle, CloudRain, TrendingUp, Droplets, Bug, Loader2, CheckCircle2, ShieldAlert, Share2 } from 'lucide-react';
 
 const Alerts = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user, profile } = useAuth();
   const [alerts, setAlerts] = useState([]);
   const [filter, setFilter] = useState('all');
@@ -178,9 +179,32 @@ const Alerts = () => {
                     </div>
                   )}
 
-                  <span style={{ color: '#9ca3af', fontSize: '11px' }}>
-                    {item.created_at ? new Date(item.created_at).toLocaleString() : 'Live Stream'}
-                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                    <span style={{ color: '#9ca3af', fontSize: '11px' }}>
+                      {item.created_at ? new Date(item.created_at).toLocaleString() : 'Live Stream'}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const msg = whatsappService.formatWeatherAlertMessage(item.message, language);
+                        whatsappService.shareToWhatsApp(msg);
+                      }}
+                      style={{
+                        backgroundColor: '#25D366',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}
+                    >
+                      <Share2 size={13} /> WhatsApp
+                    </button>
+                  </div>
                 </div>
               </div>
             );

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import DashboardLayout from './components/Layout/DashboardLayout';
+import OfflineBanner from './components/OfflineBanner';
 
 import LanguageSelection from './pages/LanguageSelection';
 import Auth from './pages/Auth';
@@ -56,6 +57,7 @@ const AppContent = () => {
 
   return (
     <Router>
+      <OfflineBanner />
       <Routes>
         <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
         <Route path="/profile-setup" element={<ProfileRoute><ProfileSetup /></ProfileRoute>} />

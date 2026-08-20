@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { diseaseService } from '../services/diseaseService';
-import { UploadCloud, CheckCircle, AlertTriangle, Info, Trash2, RefreshCw, Shield, Loader2, History, AlertCircle } from 'lucide-react';
+import { whatsappService } from '../services/whatsappService';
+import { UploadCloud, CheckCircle, AlertTriangle, Info, Trash2, RefreshCw, Shield, Loader2, History, AlertCircle, Share2 } from 'lucide-react';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 const MAX_SIZE_MB = 10;
@@ -256,8 +257,31 @@ const DiseaseDetection = () => {
             </div>
           )}
 
-          {/* Upload Another */}
-          <div style={{ textAlign: 'center', marginTop: '25px' }}>
+          {/* Actions (WhatsApp Share + Upload Another) */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '25px', flexWrap: 'wrap' }}>
+            <button 
+              onClick={() => {
+                const msg = whatsappService.formatDiseaseShareMessage(result, language);
+                whatsappService.shareToWhatsApp(msg);
+              }}
+              style={{
+                backgroundColor: '#25D366',
+                color: '#ffffff',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                boxShadow: '0 2px 6px rgba(37, 211, 102, 0.3)'
+              }}
+            >
+              <Share2 size={16} /> 
+              {language === 'mr' ? 'व्हाट्सअ‍ॅपवर शेअर करा' : language === 'hi' ? 'व्हाट्सएप पर शेयर करें' : 'Share via WhatsApp'}
+            </button>
             <button onClick={handleUploadAnother} className="secondary-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
               <RefreshCw size={16} /> {t('disease.uploadAnother')}
             </button>
