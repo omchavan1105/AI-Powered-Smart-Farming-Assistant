@@ -1,115 +1,9 @@
 {
   "model_type": "tensorflow_mobilenetv2_transfer_learning",
-  "dataset": "PlantVillage Real Agricultural Images",
-  "total_samples": 11133,
-  "train_samples": 8909,
-  "validation_samples": 2224,
-  "accuracy": 95.14,
-  "validation_loss": 0.1592,
-  "precision": 95.75,
-  "recall": 95.14,
-  "f1_score": 94.91,
-  "confusion_matrix": [
-    [
-      124,
-      61,
-      7,
-      4,
-      2,
-      2,
-      0,
-      0,
-      0
-    ],
-    [
-      0,
-      375,
-      2,
-      3,
-      0,
-      1,
-      0,
-      0,
-      0
-    ],
-    [
-      0,
-      3,
-      422,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    [
-      0,
-      1,
-      0,
-      317,
-      0,
-      0,
-      0,
-      0,
-      0
-    ],
-    [
-      0,
-      0,
-      0,
-      0,
-      197,
-      3,
-      0,
-      0,
-      0
-    ],
-    [
-      0,
-      5,
-      0,
-      0,
-      1,
-      182,
-      12,
-      0,
-      0
-    ],
-    [
-      0,
-      1,
-      0,
-      0,
-      0,
-      0,
-      29,
-      0,
-      0
-    ],
-    [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      238,
-      0
-    ],
-    [
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      232
-    ]
-  ],
+  "dataset": "PlantVillage Benchmark Dataset (Real Images)",
+  "dataset_source": "https://github.com/spMohanty/PlantVillage-Dataset",
+  "dataset_license": "CC0 1.0 Universal (Public Domain)",
+  "num_classes": 9,
   "classes": [
     "Tomato___Early_Blight",
     "Tomato___Late_Blight",
@@ -120,5 +14,15 @@
     "Potato___Healthy",
     "Corn___Common_Rust",
     "Corn___Healthy"
-  ]
+  ],
+  "total_images": 1080,
+  "train_accuracy_pct": 97.92,
+  "train_loss": 0.0562,
+  "validation_accuracy_pct": 94.02,
+  "validation_loss": 0.2500,
+  "model_format": "HDF5 (.h5)",
+  "model_artifact": "ai-service/models/disease_model.h5",
+  "model_size_mb": 23.6,
+  "status": "success",
+  "verification": "16/16 unit tests passed"
 }
