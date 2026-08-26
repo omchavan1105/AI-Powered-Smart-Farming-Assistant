@@ -106,3 +106,126 @@ footer strong { color: white; font: 700 17px 'Manrope'; }
   font-size: 18px;
 }
 
+/* ─── UI Component Library ────────────────────────────────────────── */
+
+/* Card — generic bordered/shadowed container */
+.ui-card {
+  padding: 28px;
+  border: 1px solid #e5eee7;
+  border-radius: 18px;
+  background: #fbfefb;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.ui-card--hoverable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(26, 84, 41, 0.08);
+}
+.ui-card--hoverable { cursor: pointer; }
+.ui-card--white { background: white; }
+.ui-card--resting { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); }
+.ui-card--flush { padding: 0; }
+
+/* Badge — colored status pill */
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.ui-badge--success { background: #dcfce7; color: #166534; }
+.ui-badge--warning { background: #fef3c7; color: #92400e; }
+.ui-badge--danger  { background: #fef2f2; color: #991b1b; }
+.ui-badge--info    { background: #e0f2fe; color: #0369a1; }
+.ui-badge--muted   { background: #f0f4f1; color: #627168; }
+.ui-badge--sm { font-size: 12px; padding: 3px 10px; }
+
+/* StatTile — label + big number tile with optional icon */
+.ui-stat-tile {
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e5eee7;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.ui-stat-tile--clickable { cursor: pointer; }
+.ui-stat-tile--clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(26, 84, 41, 0.08);
+}
+.ui-stat-tile__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+.ui-stat-tile__icon {
+  padding: 10px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+}
+.ui-stat-tile__label {
+  margin: 0;
+  color: #506158;
+  font-size: 15px;
+  font-weight: 600;
+}
+.ui-stat-tile__value {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #17351f;
+  font-family: 'Manrope', sans-serif;
+}
+.ui-stat-tile__subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.ui-stat-tile__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ui-stat-tile__skeleton-line {
+  background: #f0f4f1;
+  border-radius: 8px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.ui-stat-tile__skeleton-line--lg { height: 28px; width: 70%; }
+.ui-stat-tile__skeleton-line--sm { height: 16px; width: 50%; border-radius: 6px; }
+
+/* SectionHeading — eyebrow + title + subtitle */
+.ui-section-heading { margin-bottom: 24px; }
+.ui-section-heading--center { text-align: center; max-width: 650px; margin-left: auto; margin-right: auto; }
+.ui-section-heading__eyebrow {
+  color: #16803d;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin: 0;
+}
+.ui-section-heading__title {
+  margin: 6px 0 0;
+  font: 700 28px 'Manrope', sans-serif;
+  color: #166534;
+}
+.ui-section-heading__subtitle {
+  margin: 4px 0 0;
+  color: #627168;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+

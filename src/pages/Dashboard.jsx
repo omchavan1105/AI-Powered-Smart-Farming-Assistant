@@ -6,46 +6,8 @@ import { weatherService } from '../services/weatherService';
 import { cropService } from '../services/cropService';
 import { soilService } from '../services/soilService';
 import { marketService } from '../services/marketService';
-import { CloudSun, Sprout, Droplets, TrendingUp, Bot, MapPin, AlertCircle } from 'lucide-react';
-
-const DashboardCard = ({ icon, iconBg, iconColor, title, value, subtitle, subtitleColor, isLoading, isUnavailable, unavailableText, onClick }) => (
-  <div 
-    onClick={onClick}
-    style={{ 
-      background: 'white', 
-      padding: '24px', 
-      borderRadius: '16px', 
-      boxShadow: '0 4px 15px rgba(0,0,0,0.03)', 
-      border: '1px solid #e5eee7',
-      cursor: onClick ? 'pointer' : 'default',
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-    }}
-    onMouseEnter={e => { if (onClick) e.currentTarget.style.transform = 'translateY(-2px)'; }}
-    onMouseLeave={e => { if (onClick) e.currentTarget.style.transform = 'none'; }}
-  >
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '15px' }}>
-      <div style={{ background: iconBg, padding: '10px', borderRadius: '10px', color: iconColor }}>{icon}</div>
-      <h3 style={{ margin: 0, color: '#506158', fontSize: '15px' }}>{title}</h3>
-    </div>
-    {isLoading ? (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ height: '28px', width: '70%', background: '#f0f4f1', borderRadius: '8px', animation: 'pulse 1.5s ease-in-out infinite' }} />
-        <div style={{ height: '16px', width: '50%', background: '#f0f4f1', borderRadius: '6px', animation: 'pulse 1.5s ease-in-out infinite' }} />
-      </div>
-    ) : isUnavailable ? (
-      <div>
-        <p style={{ margin: 0, fontSize: '15px', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <AlertCircle size={16} /> {unavailableText}
-        </p>
-      </div>
-    ) : (
-      <>
-        <p style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#17351f' }}>{value}</p>
-        {subtitle && <span style={{ fontSize: '13px', color: subtitleColor || '#166534', fontWeight: '600' }}>{subtitle}</span>}
-      </>
-    )}
-  </div>
-);
+import { StatTile, SectionHeading } from '../components/ui';
+import { CloudSun, Sprout, Droplets, TrendingUp, Bot, MapPin } from 'lucide-react';
 
 const Dashboard = () => {
   const { t } = useLanguage();
@@ -97,25 +59,21 @@ const Dashboard = () => {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '10px' }}>
-        <div>
-          <h1 style={{ color: '#166534', margin: '0 0 8px 0', fontFamily: 'Manrope, sans-serif' }}>
-            {t('dashboard.welcome')}, {profile?.full_name || 'Farmer'} 👋
-          </h1>
-          <p style={{ color: '#627168', margin: 0, display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <MapPin size={16} /> {profile?.village || '—'}, {profile?.district || '—'}
-          </p>
-        </div>
+        <SectionHeading
+          title={<>{t('dashboard.welcome')}, {profile?.full_name || 'Farmer'} 👋</>}
+          subtitle={<span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><MapPin size={16} /> {profile?.village || '—'}, {profile?.district || '—'}</span>}
+        />
       </header>
       
       {/* Overview Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '40px' }}>
         
         {/* Crop Card */}
-        <DashboardCard
+        <StatTile
           icon={<Sprout size={24} />}
           iconBg="#e7f5e9"
           iconColor="#166534"
-          title={t('dashboard.myCrop')}
+          label={t('dashboard.myCrop')}
           value={activeCropName || t('dashboard.noCrop')}
           subtitle={activeCropName ? (activeCropSeason || 'Active') : t('dashboard.setupCrop')}
           subtitleColor={activeCropName ? '#166534' : '#9ca3af'}
@@ -123,11 +81,11 @@ const Dashboard = () => {
         />
 
         {/* Weather Card */}
-        <DashboardCard
+        <StatTile
           icon={<CloudSun size={24} />}
           iconBg="#e0f2fe"
           iconColor="#0369a1"
-          title={t('dashboard.weather')}
+          label={t('dashboard.weather')}
           value={weather ? `${weather.temp}°C` : null}
           subtitle={weather?.condition || ''}
           subtitleColor="#0369a1"
@@ -138,11 +96,11 @@ const Dashboard = () => {
         />
 
         {/* Soil Moisture Card */}
-        <DashboardCard
+        <StatTile
           icon={<Droplets size={24} />}
           iconBg="#fdf4ff"
           iconColor="#86198f"
-          title={t('dashboard.soilHealth')}
+          label={t('dashboard.soilHealth')}
           value={soil ? `pH ${soil.ph_level}` : null}
           subtitle={soil ? `Moisture: ${soil.moisture_level}%` : null}
           subtitleColor="#86198f"
@@ -152,11 +110,11 @@ const Dashboard = () => {
         />
 
         {/* Mandi Price Card */}
-        <DashboardCard
+        <StatTile
           icon={<TrendingUp size={24} />}
           iconBg="#fffbeb"
           iconColor="#b45309"
-          title={t('dashboard.mandiPrice')}
+          label={t('dashboard.mandiPrice')}
           value={marketPrice ? `₹${marketPrice.currentPrice}/Q` : null}
           subtitle={marketPrice ? `${marketPrice.market} (${marketPrice.crop})` : null}
           subtitleColor="#b45309"
@@ -198,12 +156,7 @@ const Dashboard = () => {
         </div>
       </section>
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-      `}</style>
+
     </div>
   );
 };

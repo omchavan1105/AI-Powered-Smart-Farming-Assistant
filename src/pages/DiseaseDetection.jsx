@@ -3,6 +3,11 @@ import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { diseaseService } from '../services/diseaseService';
 import { whatsappService } from '../services/whatsappService';
+import { weatherService } from '../services/weatherService';
+import { enrichMarketItem } from '../services/marketAnalytics';
+import { generateFusionAdvisory } from '../services/fusionAdvisoryEngine';
+import FusionAdvisoryCard from '../components/FusionAdvisoryCard';
+import { Card, Badge, SectionHeading } from '../components/ui';
 import { UploadCloud, CheckCircle, AlertTriangle, Info, Trash2, RefreshCw, Shield, Loader2, History, AlertCircle, Share2 } from 'lucide-react';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
@@ -10,7 +15,7 @@ const MAX_SIZE_MB = 10;
 
 const DiseaseDetection = () => {
   const { t, language } = useLanguage();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const fileInputRef = useRef(null);
   const [image, setImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
@@ -20,6 +25,7 @@ const DiseaseDetection = () => {
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [isAiOnline, setIsAiOnline] = useState(null);
+  const [fusionAdvisory, setFusionAdvisory] = useState(null);
 
   useEffect(() => {
     // Ping backend AI microservice health on mount
@@ -65,6 +71,38 @@ const DiseaseDetection = () => {
       const res = await diseaseService.detectDisease(imageFile, user?.id, language);
       setResult(res);
       if (res) setIsAiOnline(res.isRealAI);
+
+      // Generate Fusion Advisory after successful detection
+      if (res && res.isRealAI) {
+        try {
+          const location = profile?.village || profile?.district || 'Pune';
+          const [forecast, currentWeather] = await Promise.all([
+            weatherService.getForecast(location),
+            weatherService.getCurrentWeather(location)
+          ]);
+
+          // Build a basic market trend object for the detected crop
+          let marketTrend = null;
+          try {
+            const { marketService } = await import('../services/marketService');
+            const prices = await marketService.getMarketPrices(res.crop || 'Tomato');
+            if (prices && prices.length > 0) {
+              marketTrend = enrichMarketItem(prices[0]);
+            }
+          } catch { /* market data optional — skip silently */ }
+
+          const weatherData = forecast && forecast.length > 0 ? forecast : currentWeather;
+          const advisory = generateFusionAdvisory(res, weatherData, marketTrend);
+          setFusionAdvisory(advisory);
+        } catch {
+          // Fusion advisory is supplementary — don't block on failure
+          setFusionAdvisory(null);
+        }
+      } else {
+        // For offline/demo results, still generate advisory with limited data
+        const advisory = generateFusionAdvisory(res, null, null);
+        setFusionAdvisory(advisory);
+      }
     } catch (err) {
       setError(t('disease.errorAnalysis'));
     } finally {
@@ -76,6 +114,7 @@ const DiseaseDetection = () => {
     setImage(null);
     setImageFile(null);
     setResult(null);
+    setFusionAdvisory(null);
     setError('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -90,19 +129,20 @@ const DiseaseDetection = () => {
   return (
     <div style={{ maxWidth: '850px', margin: '0 auto' }}>
       <header style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-        <div>
-          <h1 style={{ color: '#166534', margin: '0 0 6px 0', fontFamily: 'Manrope, sans-serif' }}>{t('disease.title')}</h1>
-          <p style={{ color: '#627168', margin: 0 }}>{t('disease.subtitle')}</p>
-        </div>
+        <SectionHeading
+          title={t('disease.title')}
+          subtitle={t('disease.subtitle')}
+          style={{ marginBottom: 0 }}
+        />
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {isAiOnline === false || (result && !result.isRealAI) ? (
-            <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <Info size={12} /> Offline / Demo Mode
-            </span>
+            <Badge variant="warning" small icon={<Info size={12} />}>
+              Offline / Demo Mode
+            </Badge>
           ) : (
-            <span style={{ background: '#dcfce7', color: '#166534', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <CheckCircle size={12} /> PlantVillage Real AI (95.1% Acc)
-            </span>
+            <Badge variant="success" small icon={<CheckCircle size={12} />}>
+              PlantVillage Real AI (95.1% Acc)
+            </Badge>
           )}
           {history.length > 0 && (
             <button 
@@ -118,7 +158,7 @@ const DiseaseDetection = () => {
 
       {/* History Modal / Drawer */}
       {showHistory && (
-        <div style={{ background: 'white', padding: '20px', borderRadius: '16px', border: '1px solid #e5eee7', marginBottom: '25px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+        <Card white resting style={{ marginBottom: '25px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <h3 style={{ margin: 0, color: '#166534', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <History size={18} /> Past Disease Diagnosis Log
@@ -136,7 +176,7 @@ const DiseaseDetection = () => {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Error Display */}
@@ -183,7 +223,7 @@ const DiseaseDetection = () => {
 
       {/* Result Display */}
       {result && (
-        <div style={{ background: 'white', padding: '30px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #e5eee7' }}>
+        <Card white style={{ padding: '30px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
           {/* Offline Fallback Banner if applicable */}
           {!result.isRealAI && (
             <div style={{ background: '#fef3c7', border: '1px solid #fde68a', padding: '12px 18px', borderRadius: '12px', marginBottom: '20px', fontSize: '13px', color: '#92400e', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -226,13 +266,11 @@ const DiseaseDetection = () => {
           {/* Severity Badge */}
           <div style={{ marginBottom: '20px' }}>
             <span style={{ color: '#627168', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase' }}>{t('disease.severity')}: </span>
-            <span style={{ 
-              background: result.severity === 'High' ? '#fef2f2' : result.severity === 'Moderate' ? '#fef3c7' : '#f0fdf4',
-              color: result.severity === 'High' ? '#991b1b' : result.severity === 'Moderate' ? '#92400e' : '#166534',
-              padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 'bold'
-            }}>
+            <Badge
+              variant={result.severity === 'High' ? 'danger' : result.severity === 'Moderate' ? 'warning' : 'success'}
+            >
               {result.severity}
-            </span>
+            </Badge>
           </div>
 
           {/* Details Grid */}
@@ -286,7 +324,16 @@ const DiseaseDetection = () => {
               <RefreshCw size={16} /> {t('disease.uploadAnother')}
             </button>
           </div>
-        </div>
+        </Card>
+      )}
+
+      {/* Fusion Advisory Card — appears after disease result */}
+      {result && fusionAdvisory && (
+        <FusionAdvisoryCard
+          advisory={fusionAdvisory}
+          diseaseResult={result}
+          language={language}
+        />
       )}
 
       <style>{`
