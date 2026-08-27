@@ -229,3 +229,150 @@ footer strong { color: white; font: 700 17px 'Manrope'; }
   50% { opacity: 0.5; }
 }
 
+/* EmptyState — zero-data card */
+.ui-empty-state {
+  background: white;
+  padding: 40px 24px;
+  border-radius: 16px;
+  border: 1px dashed #d8e5da;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ui-empty-state__icon {
+  color: #9ca3af;
+  margin-bottom: 12px;
+  display: grid;
+  place-items: center;
+}
+.ui-empty-state__title {
+  margin: 0 0 6px 0;
+  font: 700 18px 'Manrope', sans-serif;
+  color: #17351f;
+}
+.ui-empty-state__description {
+  margin: 0 0 16px 0;
+  color: #627168;
+  font-size: 14px;
+  max-width: 480px;
+  line-height: 1.5;
+}
+.ui-empty-state__action {
+  margin-top: 4px;
+}
+
+/* AlertBanner — notification and warning cards */
+.ui-alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.ui-alert-banner--danger {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+.ui-alert-banner--warning {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+.ui-alert-banner--success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+.ui-alert-banner--info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+.ui-alert-banner__icon-wrap {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.ui-alert-banner__content {
+  flex: 1;
+}
+.ui-alert-banner__title {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+.ui-alert-banner__body {
+  font-size: 13.5px;
+}
+.ui-alert-banner__close-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+.ui-alert-banner__close-btn:hover {
+  opacity: 1;
+}
+
+/* DataBadge — honest data provenance indicators */
+.ui-data-badge {
+  letter-spacing: 0.3px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+/* LoadingSkeleton */
+.ui-skeleton {
+  background: #f0f4f1;
+  border-radius: 8px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.ui-skeleton--line {
+  height: 16px;
+  width: 100%;
+}
+.ui-skeleton--circle {
+  border-radius: 50%;
+}
+.ui-skeleton--rect {
+  border-radius: 12px;
+}
+.ui-skeleton--card {
+  background: white;
+  border: 1px solid #e5eee7;
+  border-radius: 16px;
+  padding: 24px;
+  animation: none;
+}
+.ui-skeleton__line {
+  background: #f0f4f1;
+  border-radius: 6px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Form inputs accessible focus rings */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 2px solid #16803d !important;
+  outline-offset: 2px !important;
+}
+
+/* Touch targets >= 44px for primary & secondary buttons on mobile */
+.primary-btn,
+.secondary-btn {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+

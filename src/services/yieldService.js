@@ -2,22 +2,71 @@ import { supabase } from '../lib/supabase';
 
 export const yieldService = {
   predictYield: async (params, farmerId = null) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 600));
     
     const farmSize = parseFloat(params?.farmSize) || 2;
-    const basePerAcre = params?.crop === 'Tomato' ? 2250 : params?.crop === 'Onion' ? 1800 : 1200;
+    const crop = params?.crop || 'Tomato';
+    
+    // Regional benchmark averages (kg per acre)
+    const yieldBenchmarks = {
+      'Tomato': 2400,
+      'Onion': 2000,
+      'Potato': 2800,
+      'Corn': 1600,
+      'Soybean': 900,
+      'Cotton': 800
+    };
+
+    // Benchmark farm gate prices (₹ per kg)
+    const priceBenchmarks = {
+      'Tomato': 35,
+      'Onion': 25,
+      'Potato': 22,
+      'Corn': 24,
+      'Soybean': 48,
+      'Cotton': 65
+    };
+
+    // Benchmark input cost per acre (seeds, fertilizers, labor, machinery)
+    const costBenchmarks = {
+      'Tomato': 28000,
+      'Onion': 22000,
+      'Potato': 30000,
+      'Corn': 16000,
+      'Soybean': 14000,
+      'Cotton': 20000
+    };
+
+    const basePerAcre = yieldBenchmarks[crop] || 1500;
+    const pricePerKg = priceBenchmarks[crop] || 30;
+    const costPerAcre = costBenchmarks[crop] || 20000;
+
     const expectedYieldKg = Math.round(farmSize * basePerAcre);
-    const pricePerKg = params?.crop === 'Tomato' ? 40 : params?.crop === 'Onion' ? 25 : 50;
-    const expectedIncome = expectedYieldKg * pricePerKg;
+    const expectedGrossIncome = expectedYieldKg * pricePerKg;
+    const estimatedTotalCost = Math.round(farmSize * costPerAcre);
+    const estimatedNetProfit = expectedGrossIncome - estimatedTotalCost;
+
+    const costBreakdown = {
+      seeds: Math.round(estimatedTotalCost * 0.20),
+      fertilizers: Math.round(estimatedTotalCost * 0.35),
+      labor: Math.round(estimatedTotalCost * 0.30),
+      irrigationAndMachinery: Math.round(estimatedTotalCost * 0.15)
+    };
 
     const result = {
+      crop,
+      farmSize,
       expectedYieldKg,
-      expectedIncome,
-      riskLevel: "Low",
+      expectedIncome: expectedGrossIncome,
+      estimatedTotalCost,
+      estimatedNetProfit,
+      costBreakdown,
+      pricePerKg,
+      riskLevel: "Moderate",
       mainFactors: [
-        "Optimal soil moisture levels detected",
-        "Favorable 7-day temperature range",
-        "Crop stage aligned with seasonal rainfall"
+        `Regional ICAR average yield benchmark for ${crop}: ${basePerAcre} kg/acre`,
+        `Estimated farm gate price: ₹${pricePerKg}/kg based on seasonal mandi modal rates`,
+        `Production cost: ₹${costPerAcre.toLocaleString()}/acre covering seeds, nutrients, and labor`
       ]
     };
 

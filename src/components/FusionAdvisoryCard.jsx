@@ -166,26 +166,34 @@ const FusionAdvisoryCard = ({ advisory, diseaseResult, language = 'en' }) => {
         </div>
       )}
 
-      {/* Treatment Tiers */}
+      {/* Treatment Tiers & Cost Optimizer */}
       {treatments && (
         <div>
-          <h3 style={{
-            fontSize: '15px',
-            color: '#17351f',
-            margin: '0 0 12px 0',
-            fontFamily: "'Manrope', sans-serif",
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <Tag size={16} /> Treatment Options (Cost Tiers)
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+            <h3 style={{
+              fontSize: '15px',
+              color: '#17351f',
+              margin: 0,
+              fontFamily: "'Manrope', sans-serif",
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <Tag size={16} /> Treatment Options (Cost Optimizer)
+            </h3>
+            {treatments.dosage && (
+              <span style={{ fontSize: '12px', color: '#166534', background: '#e7f5e9', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
+                Dosage: {treatments.dosage}
+              </span>
+            )}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '12px' }}>
             {/* Branded */}
             <div style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e5eee7', background: '#fbfefb' }}>
               <span style={{ fontSize: '11px', fontWeight: 800, color: '#16803d', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                Branded
+                Branded (Standard)
               </span>
               <p style={{ margin: '6px 0 0', fontSize: '14px', color: '#17351f', fontWeight: 600 }}>
                 {treatments.branded.name}
@@ -195,7 +203,7 @@ const FusionAdvisoryCard = ({ advisory, diseaseResult, language = 'en' }) => {
             {/* Generic */}
             <div style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e5eee7', background: '#fbfefb' }}>
               <span style={{ fontSize: '11px', fontWeight: 800, color: '#0369a1', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                Generic
+                Generic (Lower Cost)
               </span>
               <p style={{ margin: '6px 0 0', fontSize: '14px', color: '#17351f', fontWeight: 600 }}>
                 {treatments.generic.name}
@@ -205,7 +213,7 @@ const FusionAdvisoryCard = ({ advisory, diseaseResult, language = 'en' }) => {
             {/* Home Remedy */}
             <div style={{ padding: '14px', borderRadius: '12px', border: '1px solid #e5eee7', background: '#fbfefb' }}>
               <span style={{ fontSize: '11px', fontWeight: 800, color: '#92400e', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                Home Remedy
+                Bio / Home Remedy
               </span>
               <p style={{ margin: '6px 0 0', fontSize: '14px', color: '#17351f', fontWeight: 600 }}>
                 {treatments.homeRemedy.name}
@@ -213,6 +221,12 @@ const FusionAdvisoryCard = ({ advisory, diseaseResult, language = 'en' }) => {
               <span style={{ fontSize: '13px', color: '#627168' }}>{treatments.homeRemedy.approxCost}</span>
             </div>
           </div>
+
+          {treatments.safetyNote && (
+            <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12.5px', color: '#64748b' }}>
+              <strong>Safety Note:</strong> {treatments.safetyNote}
+            </div>
+          )}
         </div>
       )}
     </Card>

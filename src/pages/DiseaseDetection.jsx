@@ -4,11 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { diseaseService } from '../services/diseaseService';
 import { whatsappService } from '../services/whatsappService';
 import { weatherService } from '../services/weatherService';
+import { marketService } from '../services/marketService';
 import { enrichMarketItem } from '../services/marketAnalytics';
 import { generateFusionAdvisory } from '../services/fusionAdvisoryEngine';
 import FusionAdvisoryCard from '../components/FusionAdvisoryCard';
-import { Card, Badge, SectionHeading } from '../components/ui';
-import { UploadCloud, CheckCircle, AlertTriangle, Info, Trash2, RefreshCw, Shield, Loader2, History, AlertCircle, Share2 } from 'lucide-react';
+import DiseaseProgressTracker from '../components/DiseaseProgressTracker';
+import { Card, Badge, SectionHeading, DataBadge } from '../components/ui';
+import { UploadCloud, CheckCircle, AlertTriangle, Info, Trash2, RefreshCw, Shield, Loader2, History, AlertCircle, Share2, Activity } from 'lucide-react';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 const MAX_SIZE_MB = 10;
@@ -84,7 +86,6 @@ const DiseaseDetection = () => {
           // Build a basic market trend object for the detected crop
           let marketTrend = null;
           try {
-            const { marketService } = await import('../services/marketService');
             const prices = await marketService.getMarketPrices(res.crop || 'Tomato');
             if (prices && prices.length > 0) {
               marketTrend = enrichMarketItem(prices[0]);
@@ -156,27 +157,11 @@ const DiseaseDetection = () => {
         </div>
       </header>
 
-      {/* History Modal / Drawer */}
+      {/* Longitudinal Disease Progress Tracker */}
       {showHistory && (
-        <Card white resting style={{ marginBottom: '25px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <h3 style={{ margin: 0, color: '#166534', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <History size={18} /> Past Disease Diagnosis Log
-            </h3>
-            <button onClick={() => setShowHistory(false)} style={{ background: 'none', border: 'none', color: '#627168', cursor: 'pointer', fontSize: '13px' }}>Close</button>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '240px', overflowY: 'auto' }}>
-            {history.map((h, i) => (
-              <div key={h.id || i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#f8fcf8', borderRadius: '8px', border: '1px solid #e5eee7', fontSize: '13px' }}>
-                <div>
-                  <strong style={{ color: '#17351f' }}>{h.detected_disease}</strong>
-                  <span style={{ color: '#627168', marginLeft: '10px' }}>Severity: {h.severity} • Confidence: {h.confidence_score}%</span>
-                </div>
-                <span style={{ color: '#9ca3af', fontSize: '11px' }}>{new Date(h.detected_at).toLocaleDateString()}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <div style={{ marginBottom: '25px' }}>
+          <DiseaseProgressTracker history={history} />
+        </div>
       )}
 
       {/* Error Display */}
